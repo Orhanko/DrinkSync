@@ -24,7 +24,7 @@ Firestore je organizovan po **kolekcijama i podkolekcijama**:
 ```
 /users/{uid}
   ├── displayName: string
-  ├── activeCafeId: string (npr. "caffe_bordeaux")
+  ├── activeCafeId: string
 
 /cafes/{cafeId}
   ├── name: string
