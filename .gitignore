@@ -1,0 +1,55 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub-cache/
+build/
+**/build/
+
+# Generated plugin registrants
+flutter_export_environment.sh
+
+# Android
+android/.gradle/
+android/app/build/
+*.apk
+*.aab
+*.aar
+*.iml
+local.properties
+.gradle/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/engine/
+*.xcworkspace
+DerivedData/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Xcode user data
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+
+# Firebase config (ako je repo JAVAN — obavezno ignorisi!)
+# Ako je repo privatan i ti si jedini dev, mozes ih ostaviti
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# Misc
+*.log
+*.tmp
+*.lock
+*.DS_Store
+*.swp
+
+# IDE/editor specific
+.vscode/
+.idea/
+*.iml
