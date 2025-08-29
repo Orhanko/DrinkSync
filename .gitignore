@@ -17,7 +17,7 @@ android/app/build/
 *.iml
 local.properties
 .gradle/
-
+lib/firebase_options.dart
 # iOS
 ios/Pods/
 ios/.symlinks/
@@ -53,3 +53,4 @@ android/app/google-services.json
 .vscode/
 .idea/
 *.iml
+/DrinkSync.git/
