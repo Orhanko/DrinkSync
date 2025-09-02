@@ -38,5 +38,5 @@ class DrinksConfirm extends DrinksEvent {
   final String cafeId;
   final String? updatedByUid;
   final String? updatedByName;
-  const DrinksConfirm({required this.cafeId, required this.updatedByUid, required this.updatedByName});
+  const DrinksConfirm({required this.cafeId, this.updatedByUid, this.updatedByName});
 }

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:drinksync/features/home/presentation/home_shell.dart'; // ⬅️ novi shell sa tabovima
 import 'package:drinksync/features/membership/presentation/member_guard.dart';
-import 'package:drinksync/features/menu/presentation/menu_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'sign_in_page.dart';
@@ -35,15 +35,23 @@ class _ActiveCafeRouter extends StatelessWidget {
         if (!snap.hasData) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
+
         final data = snap.data!.data();
         final activeCafeId = data?['activeCafeId'] as String?;
         if (activeCafeId == null || activeCafeId.isEmpty) {
           return const _NoCafeScreen();
         }
-        // Guard koji provjerava membership/rolu pa tek onda ulazi u MenuScreen
+
+        // ✅ Provjeri članstvo/rolu i otvori HomeShell (tabovi: Inventar, Predaja smjene, Logovi*)
         return MemberGuard(
           cafeId: activeCafeId,
-          builder: (context, role) => MenuScreen(cafeId: activeCafeId, isManager: role == 'manager'),
+          builder: (context, role) {
+            final isManager = role == 'manager';
+            return HomeShell(
+              cafeId: activeCafeId,
+              isManager: isManager, // shell odlučuje koji tabovi su vidljivi
+            );
+          },
         );
       },
     );
