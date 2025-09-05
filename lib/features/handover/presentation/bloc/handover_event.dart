@@ -16,8 +16,7 @@ class HandoverInit extends HandoverEvent {
 class HandoverStart extends HandoverEvent {
   final String cafeId;
   final String openedByName;
-  final int openingCashCents; // NEW
-
+  final int openingCashCents; // 👈 NOVO
   const HandoverStart({required this.cafeId, required this.openedByName, required this.openingCashCents});
 
   @override

@@ -1,9 +1,15 @@
+// drinks_repository.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../handover/data/handover_repository.dart'; // 👈 import handover repoa
 import '../domain/drink.dart';
 
 class DrinksRepository {
   final FirebaseFirestore _fs;
-  DrinksRepository({FirebaseFirestore? firestore}) : _fs = firestore ?? FirebaseFirestore.instance;
+  final HandoverRepository _handover; // 👈 NOVO
+
+  DrinksRepository({FirebaseFirestore? firestore, HandoverRepository? handover})
+    : _fs = firestore ?? FirebaseFirestore.instance,
+      _handover = handover ?? HandoverRepository(); // 👈 default
 
   CollectionReference<Map<String, dynamic>> _drinksCol(String cafeId) =>
       _fs.collection('cafes').doc(cafeId).collection('drinks');
@@ -11,13 +17,10 @@ class DrinksRepository {
   CollectionReference<Map<String, dynamic>> _logsCol(String cafeId) =>
       _fs.collection('cafes').doc(cafeId).collection('logs');
 
-  /// Realtime stream liste pića
   Stream<List<Drink>> streamDrinks(String cafeId) {
     return _drinksCol(cafeId).orderBy('name').snapshots().map((snap) => snap.docs.map(Drink.fromDoc).toList());
   }
 
-  /// Primjena delta promjena i (pokušaj) upisa logova.
-  ///
   /// [deltas] = { drinkId: +2 / -1 / ... }
   Future<void> applyDeltas({
     required String cafeId,
@@ -44,7 +47,7 @@ class DrinksRepository {
 
     await batch.commit();
 
-    // 2) logovi (odvojeno od batch-a – ako padnu, ne rušimo glavni update)
+    // 2) logovi (best-effort)
     try {
       final writes = deltas.entries.where((e) => e.value != 0).map((e) {
         return _logsCol(cafeId).add({
@@ -57,7 +60,29 @@ class DrinksRepository {
       }).toList();
       await Future.wait(writes);
     } catch (_) {
-      // namjerno ignorišemo – update je već uspješno primijenjen
+      // ignoriši
+    }
+
+    // 3) RESTOCK → aktivna smjena: upiši samo POZITIVNE delte (dodana roba)
+    try {
+      if (updatedByUid == null) return; // ne znamo ko je — preskoči
+
+      // pokupi samo > 0
+      final positive = <String, int>{};
+      for (final e in deltas.entries) {
+        if (e.value > 0) {
+          positive[e.key] = (positive[e.key] ?? 0) + e.value;
+        }
+      }
+      if (positive.isEmpty) return;
+
+      final sessionId = await _handover.getActiveSessionId(cafeId: cafeId, uid: updatedByUid);
+      if (sessionId == null) return; // nema aktivne smjene — nema restock zapisa
+
+      // bulk upis u restock mapu
+      await _handover.incrementRestockBulk(cafeId: cafeId, sessionId: sessionId, deltas: positive);
+    } catch (_) {
+      // ne ruši inventar ako restock propadne
     }
   }
 }
