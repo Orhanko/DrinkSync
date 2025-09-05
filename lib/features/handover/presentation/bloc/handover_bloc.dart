@@ -40,18 +40,14 @@ class HandoverBloc extends Bloc<HandoverEvent, HandoverState> {
       final uid = _auth.currentUser?.uid;
       if (uid == null) throw Exception('Niste prijavljeni.');
 
-      final sessionId = await repo.startSession(cafeId: e.cafeId, uid: uid, openedByName: e.openedByName);
-
-      emit(
-        state.copyWith(
-          loading: false,
-          activeSessionId: sessionId,
-          // reset lokalnih polja pri otvaranju
-          cashCents: 0,
-          expensesCents: 0,
-          error: null,
-        ),
+      final sessionId = await repo.startSession(
+        cafeId: e.cafeId,
+        uid: uid,
+        openedByName: e.openedByName,
+        openingCashCents: e.openingCashCents, // NEW
       );
+
+      emit(state.copyWith(loading: false, activeSessionId: sessionId, cashCents: 0, expensesCents: 0, error: null));
     } catch (err) {
       emit(state.copyWith(loading: false, error: err.toString()));
     }

@@ -16,9 +16,12 @@ class HandoverInit extends HandoverEvent {
 class HandoverStart extends HandoverEvent {
   final String cafeId;
   final String openedByName;
-  const HandoverStart({required this.cafeId, required this.openedByName});
+  final int openingCashCents; // NEW
+
+  const HandoverStart({required this.cafeId, required this.openedByName, required this.openingCashCents});
+
   @override
-  List<Object?> get props => [cafeId, openedByName];
+  List<Object?> get props => [cafeId, openedByName, openingCashCents];
 }
 
 class HandoverCashChanged extends HandoverEvent {

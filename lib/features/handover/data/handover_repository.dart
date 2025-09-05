@@ -38,7 +38,12 @@ class HandoverRepository {
 
   /// Kreira otvorenu smjenu sa snimkom stanja artikala (openingSnapshot). Vraća sessionId.
   /// ✅ Pišemo isključivo polja dozvoljena pravilima za create.
-  Future<String> startSession({required String cafeId, required String uid, required String openedByName}) async {
+  Future<String> startSession({
+    required String cafeId,
+    required String uid,
+    required String openedByName,
+    required int openingCashCents, // NEW
+  }) async {
     final openingSnapshot = await _makeDrinksSnapshot(cafeId);
     final ref = _sessionsCol(cafeId).doc();
 
@@ -47,7 +52,8 @@ class HandoverRepository {
       'openedAt': FieldValue.serverTimestamp(),
       'openedBy': uid,
       'openedByName': openedByName,
-      'openingSnapshot': openingSnapshot, // mora biti MAP (može i {}), ne null
+      'openingCash': openingCashCents, // NEW (int, feninga)
+      'openingSnapshot': openingSnapshot,
     });
 
     return ref.id;

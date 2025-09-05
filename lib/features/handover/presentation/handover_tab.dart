@@ -46,14 +46,26 @@ class HandoverTab extends StatelessWidget {
 
 /* -------------------- START VIEW (nema aktivne smjene) -------------------- */
 
-class _StartHandoverView extends StatelessWidget {
+class _StartHandoverView extends StatefulWidget {
   final String cafeId;
   final bool loading;
   const _StartHandoverView({super.key, required this.cafeId, required this.loading});
 
+  @override
+  State<_StartHandoverView> createState() => _StartHandoverViewState();
+}
+
+class _StartHandoverViewState extends State<_StartHandoverView> {
   Future<String?> _myName() async {
     final u = FirebaseAuth.instance.currentUser;
     return u?.displayName ?? u?.email ?? u?.uid;
+  }
+
+  final _openingCashCtl = TextEditingController();
+  @override
+  void dispose() {
+    _openingCashCtl.dispose();
+    super.dispose();
   }
 
   @override
@@ -64,9 +76,17 @@ class _StartHandoverView extends StatelessWidget {
         key: const ValueKey('start_content'),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (loading) const LinearProgressIndicator(),
+          if (widget.loading) const LinearProgressIndicator(),
           const Text('Nema aktivne smjene.'),
-          const SizedBox(height: 12),
+          TextField(
+            controller: _openingCashCtl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Početni novac (KM)',
+              prefixText: 'KM ',
+              hintText: 'npr. 100.00',
+            ),
+          ),
           FutureBuilder<String?>(
             future: _myName(),
             builder: (context, s) {
@@ -74,9 +94,18 @@ class _StartHandoverView extends StatelessWidget {
               return FilledButton.icon(
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Započni zapis smjene'),
-                onPressed: loading
+                onPressed: widget.loading
                     ? null
-                    : () => context.read<HandoverBloc>().add(HandoverStart(cafeId: cafeId, openedByName: name)),
+                    : () {
+                        final openingCashCents = _toCents(_openingCashCtl.text);
+                        context.read<HandoverBloc>().add(
+                          HandoverStart(
+                            cafeId: widget.cafeId,
+                            openedByName: name,
+                            openingCashCents: openingCashCents, // NEW
+                          ),
+                        );
+                      },
               );
             },
           ),
@@ -84,6 +113,23 @@ class _StartHandoverView extends StatelessWidget {
       ),
     );
   }
+}
+
+// dodaj helper (možeš iskoristiti onaj što već imaš u _ActiveHandoverView)
+int _toCents(String input) {
+  final norm = input.replaceAll(',', '.').trim();
+  if (norm.isEmpty) return 0;
+  final parts = norm.split('.');
+  if (parts.length == 1) {
+    final i = int.tryParse(parts[0]) ?? 0;
+    return i * 100;
+  }
+  final whole = int.tryParse(parts[0]) ?? 0;
+  var frac = parts[1];
+  if (frac.length == 1) frac = '${frac}0';
+  if (frac.length > 2) frac = frac.substring(0, 2);
+  final f = int.tryParse(frac) ?? 0;
+  return whole * 100 + f;
 }
 
 /* -------------------- ACTIVE VIEW (smjena u toku) -------------------- */
