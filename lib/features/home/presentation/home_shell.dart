@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drinksync/features/handover/presentation/handover_tab.dart';
 import 'package:drinksync/features/logs/presentation/logs_screen.dart';
 import 'package:drinksync/features/menu/presentation/menu_screen.dart';
@@ -15,6 +16,14 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+
+  Future<String> _getCafeName() async {
+    final doc = await FirebaseFirestore.instance.collection('cafes').doc(widget.cafeId).get();
+    if (doc.exists && doc.data()?['name'] != null) {
+      return doc["name"] as String;
+    }
+    return widget.cafeId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +57,28 @@ class _HomeShellState extends State<HomeShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
-        centerTitle: true,
+        centerTitle: false,
+        title: FutureBuilder<String>(
+          future: _getCafeName(),
+          builder: (context, snapshot) {
+            final cafeName = snapshot.data ?? '';
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'DRINKSYNC',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                ),
+                if (cafeName.isNotEmpty)
+                  Text(
+                    cafeName,
+                    style: const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+              ],
+            );
+          },
+        ),
         actions: [
           IconButton(
             tooltip: 'Odjava',
