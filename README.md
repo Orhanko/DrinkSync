@@ -34,11 +34,21 @@ Firestore je organizovan po **kolekcijama i podkolekcijama**:
 /cafes/{cafeId}
   ├── name: string
   ├── members/{uid} → dokumenti korisnika članova
-  ├── drinks/{drinkId}
+  ├── drinks/{drinkId}              # artikli u šanku
+  │     ├── name: string
+  │     ├── quantity: number
+  │     ├── price: number (feninga)
+  ├── storage/{itemId}              # artikli u skladištu
   │     ├── name: string
   │     ├── quantity: number
   │     ├── price: number (feninga)
   ├── logs/{logId}
+  │     ├── drinkId: string
+  │     ├── delta: number
+  │     ├── collection: "drinks" | "storage"
+  │     ├── updatedAt: timestamp
+  │     ├── updatedBy: string (uid)
+  │     ├── updatedByName: string
   └── handoverSessions/{sessionId}
         ├── status: "open" | "closed"
         ├── openedBy, openedByName, openedAt
