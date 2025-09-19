@@ -6,13 +6,17 @@ import '../domain/drink.dart';
 class DrinksRepository {
   final FirebaseFirestore _fs;
   final HandoverRepository _handover; // 👈 NOVO
+  final String collectionName;
 
-  DrinksRepository({FirebaseFirestore? firestore, HandoverRepository? handover})
-    : _fs = firestore ?? FirebaseFirestore.instance,
-      _handover = handover ?? HandoverRepository(); // 👈 default
+  DrinksRepository({
+    FirebaseFirestore? firestore,
+    HandoverRepository? handover,
+    this.collectionName = 'drinks', // <-- default je dosadašnje stanje
+  }) : _fs = firestore ?? FirebaseFirestore.instance,
+       _handover = handover ?? HandoverRepository();
 
   CollectionReference<Map<String, dynamic>> _drinksCol(String cafeId) =>
-      _fs.collection('cafes').doc(cafeId).collection('drinks');
+      _fs.collection('cafes').doc(cafeId).collection(collectionName);
 
   CollectionReference<Map<String, dynamic>> _logsCol(String cafeId) =>
       _fs.collection('cafes').doc(cafeId).collection('logs');
@@ -49,10 +53,12 @@ class DrinksRepository {
 
     // 2) logovi (best-effort)
     try {
+      final source = collectionName;
       final writes = deltas.entries.where((e) => e.value != 0).map((e) {
         return _logsCol(cafeId).add({
           'drinkId': e.key,
           'delta': e.value,
+          'collection': source,
           'updatedAt': FieldValue.serverTimestamp(),
           'updatedBy': updatedByUid,
           'updatedByName': updatedByName,

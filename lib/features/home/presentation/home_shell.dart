@@ -41,20 +41,6 @@ class _HomeShellState extends State<HomeShell> {
       if (widget.isManager) const BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Logovi'),
     ];
 
-    // Naslov AppBar-a po tabu (možeš kasnije uljepšati)
-    String title;
-    switch (_index) {
-      case 0:
-        title = 'DrinkSync – Inventar';
-        break;
-      case 1:
-        title = 'DrinkSync – Predaja smjene';
-        break;
-      default:
-        title = 'DrinkSync';
-        break;
-    }
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,

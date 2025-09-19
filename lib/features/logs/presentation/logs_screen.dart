@@ -39,10 +39,11 @@ class LogsTab extends StatelessWidget {
             final by = d['updatedByName'] as String? ?? d['updatedBy'] as String? ?? 'Nepoznato';
             final ts = d['updatedAt']; // može biti null dok serverTimestamp ne upiše
             final when = (ts is Timestamp) ? TimeOfDay.fromDateTime(ts.toDate()).format(context) : '…';
+            final source = d['collection'] as String? ?? "proba";
 
             return ListTile(
               title: Text('$drinkId   ${delta >= 0 ? '+' : ''}$delta'),
-              subtitle: Text('by $by • $when'),
+              subtitle: Text('by $by • $when • $source'),
               dense: true,
             );
           },

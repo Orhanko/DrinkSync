@@ -1,4 +1,3 @@
-
 class LogRecord {
   final String id;
   final String drinkId;
@@ -8,6 +7,7 @@ class LogRecord {
   final String? updatedBy;
   final String? updatedByName;
   final DateTime? createdAt;
+  final String source;
 
   LogRecord({
     required this.id,
@@ -18,6 +18,7 @@ class LogRecord {
     this.updatedBy,
     this.updatedByName,
     this.createdAt,
+    required this.source,
   });
 
   factory LogRecord.fromFirestore(String id, Map<String, dynamic> data) {
@@ -30,6 +31,7 @@ class LogRecord {
       updatedBy: data['updatedBy'] as String?,
       updatedByName: data['updatedByName'] as String?,
       createdAt: (data['createdAt'] as dynamic)?.toDate(),
+      source: (data['collection'] as String?) ?? "proba",
     );
   }
 }
