@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import '../../data/handover_repository.dart';
 import 'handover_event.dart';
 import 'handover_state.dart';
@@ -42,14 +44,24 @@ class HandoverBloc extends Bloc<HandoverEvent, HandoverState> {
 
       final sessionId = await repo.startSession(
         cafeId: e.cafeId,
-        uid: uid,
+        openedBy: _auth.currentUser?.uid ?? '',
         openedByName: e.openedByName,
-        openingCashCents: e.openingCashCents, // NEW
+        openingCashCents: e.openingCashCents,
       );
 
       emit(state.copyWith(loading: false, activeSessionId: sessionId, cashCents: 0, expensesCents: 0, error: null));
-    } catch (err) {
-      emit(state.copyWith(loading: false, error: err.toString()));
+    } on FirebaseException catch (e) {
+      // ✅ tačan Firestore error
+      debugPrint("[handover][FIRESTORE] code=${e.code} message=${e.message}");
+      emit(state.copyWith(loading: false, error: "Firestore: ${e.code}"));
+    } on StateError catch (e) {
+      // npr. SHIFT_ALREADY_OPEN
+      debugPrint("[handover][STATE] ${e.toString()}");
+      emit(state.copyWith(loading: false, error: e.toString()));
+    } catch (e, st) {
+      // fallback
+      debugPrint("[handover][UNKNOWN] $e\n$st");
+      emit(state.copyWith(loading: false, error: e.toString()));
     }
   }
 
@@ -78,7 +90,7 @@ class HandoverBloc extends Bloc<HandoverEvent, HandoverState> {
       await repo.closeSession(
         cafeId: e.cafeId,
         sessionId: state.activeSessionId!,
-        uid: uid,
+        closedBy: _auth.currentUser?.uid ?? '',
         closedByName: e.closedByName,
         cashCount: state.cashCents,
         expenses: state.expensesCents,
